@@ -2,7 +2,7 @@
   CKEDITOR.plugins.add( 'bylawlist', {
     onLoad: function() {
       CKEDITOR.addCss(
-        'ol.bylawlist{list-style-type:none;list-style-position:inside;padding-left:1.5em}ol.bylawlist li{counter-increment:bylawlist-counter !important}ol.bylawlist li:first-child{counter-reset:bylawlist-counter}ol.bylawlist>li:before{content:"(" counter(bylawlist-counter,decimal) ") " !important}ol.bylawlist>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li:before{content:"(" counter(bylawlist-counter,lower-alpha) ") "}ol.bylawlist>li>ol>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li>ol>li:before{content:"(" counter(bylawlist-counter,lower-roman) ") "}ol.bylawlist>li>ol>li>ol>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li>ol>li>ol>li:before{content:"(" counter(bylawlist-counter,decimal) ") "}ol.bylawlist>li ol>li:before{content:"(" counter(bylawlist-counter,lower-alpha) ") " !important}ol.bylawlist>li ol>li ol>li:before{content:"(" counter(bylawlist-counter,lower-roman) ") " !important}ol.bylawlist>li ol>li ol>li ol>li:before{content:counter(bylawlist-counter,decimal) ". " !important}'
+        'ol.bylawlist{list-style-type:none;list-style-position:inside;padding-left:1.5em}ol.bylawlist ol{counter-reset:bylawlist-counter;}ol.bylawlist li{counter-increment:bylawlist-counter !important}ol.bylawlist>li:before{content:"(" counter(bylawlist-counter,decimal) ") " !important}ol.bylawlist>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li:before{content:"(" counter(bylawlist-counter,lower-alpha) ") "}ol.bylawlist>li>ol>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li>ol>li:before{content:"(" counter(bylawlist-counter,lower-roman) ") "}ol.bylawlist>li>ol>li>ol>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li>ol>li>ol>li:before{content:"(" counter(bylawlist-counter,decimal) ") "}ol.bylawlist>li ol>li:before{content:"(" counter(bylawlist-counter,lower-alpha) ") " !important}ol.bylawlist>li ol>li ol>li:before{content:"(" counter(bylawlist-counter,lower-roman) ") " !important}ol.bylawlist>li ol>li ol>li ol>li:before{content:counter(bylawlist-counter,decimal) ". " !important}'
       );
     },
     icons: 'bylawlist', // Bylaw List icon
@@ -39,6 +39,9 @@
       });
 
       editor.on('contentDom', () => {
+        CKEDITOR.addCss(
+          'ol.bylawlist{list-style-type:none;list-style-position:inside;padding-left:1.5em}ol.bylawlist ol{counter-reset:bylawlist-counter;}ol.bylawlist li{counter-increment:bylawlist-counter !important}ol.bylawlist>li:before{content:"(" counter(bylawlist-counter,decimal) ") " !important}ol.bylawlist>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li:before{content:"(" counter(bylawlist-counter,lower-alpha) ") "}ol.bylawlist>li>ol>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li>ol>li:before{content:"(" counter(bylawlist-counter,lower-roman) ") "}ol.bylawlist>li>ol>li>ol>li>ol{list-style-type:inherit}ol.bylawlist>li>ol>li>ol>li>ol>li:before{content:"(" counter(bylawlist-counter,decimal) ") "}ol.bylawlist>li ol>li:before{content:"(" counter(bylawlist-counter,lower-alpha) ") " !important}ol.bylawlist>li ol>li ol>li:before{content:"(" counter(bylawlist-counter,lower-roman) ") " !important}ol.bylawlist>li ol>li ol>li ol>li:before{content:counter(bylawlist-counter,decimal) ". " !important}'
+        );
         /**
          * Updates all list item starting points based on list start value.
          *
@@ -46,15 +49,16 @@
          */
         function updateList(list) {
           // If the object passed in it not an ordered list, do not continue.
-          if (list.localName !== 'ol') return null
+          if (list.localName !== "ol") return null;
 
-          const start = list.getAttribute('start') > 1 ? list.getAttribute('start') : 1;
-          const listItems = list.querySelectorAll(':scope > li');
-
-          listItems.forEach((item) => {
-            item.style.counterReset = listItems[0] === item ? `bylawlist-counter ${start - 1}` : '';
-          });
-        }
+          if (list) {
+            const startValue = list.getAttribute("start") || 0;
+            if (startValue > 0) {
+              list.style.counterReset = `bylawlist-counter ${startValue - 1}`;
+              list.attributes.value = startValue - 1;
+            }
+          }
+          }
 
         /**
          * Runs the updateList function on all bylawlists and child lists.
@@ -83,7 +87,7 @@
 
         // Run updateList on all lists with start values.
         editor.document.find('ol[start]').$.forEach((list) => {
-          updateList(list);
+          updateAllLists(list);
         })
 
         // Set up MutationObserver.
